@@ -1,50 +1,378 @@
-/*
-  games.js — Game Card Filtering
-  ═══════════════════════════════════════════════════════════════
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YOUR NAME — Game Developer</title>
 
-  Handles the sidebar filter buttons on the portfolio page.
-  When you click "Game Jams", this script shows only cards
-  with "jam" in their data-tags attribute and hides the rest.
+  <!-- Google Fonts - loads the two typefaces used across the site -->
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-  ═══════════════════════════════════════════════════════════════
-*/
+  <!-- Our stylesheets - each one handles a different part of the UI -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/games.css">
+</head>
+<body>
 
-import { appendLog } from './console.js';
+  <!-- ============================================================
+    TOPBAR
+    The bar running across the top with your name, nav tabs,
+    and the "open to work" status indicator.
+  ============================================================ -->
+  <div class="topbar">
+    <div class="topbar-left">
 
-/**
- * Filters the game cards by category or tag.
- * Called from the onclick attributes on sidebar buttons.
- *
- * @param {string}      filter  - The tag to filter by, e.g. 'jam', 'Unity', 'all'
- * @param {HTMLElement} btn     - The button that was clicked (passed as 'this' in HTML)
- */
-export function filterGames(filter, btn) {
+      <!-- Change this to your name / domain -->
+      <span class="topbar-logo">◆ YOUR_NAME.dev</span>
 
-  // Deactivate all sidebar items, then activate just the clicked one
-  document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
-  btn.classList.add('active');
+      <div class="topbar-tabs">
+        <button class="tab active" onclick="switchTab('portfolio')">
+          <span class="dot"></span> PORTFOLIO
+        </button>
+        <button class="tab" onclick="switchTab('about')">
+          <span class="dot"></span> ABOUT
+        </button>
+        <button class="tab" onclick="switchTab('contact')">
+          <span class="dot"></span> CONTACT
+        </button>
+      </div>
+    </div>
 
-  // Get every game card and decide whether to show or hide it
-  const cards = document.querySelectorAll('.game-card');
-  let visibleCount = 0;
+    <div class="status-bar-right">
+      <!-- Remove this span if you're not open to work -->
+      <span class="status-pill">OPEN TO WORK</span>
+      <span class="version-label">v1.0.0</span>
+    </div>
+  </div>
 
-  cards.forEach(card => {
 
-    // data-tags in HTML becomes dataset.tags in JavaScript.
-    // e.g. data-tags="all,jam,Unity" → ['all', 'jam', 'Unity']
-    const tags = card.dataset.tags ? card.dataset.tags.split(',') : [];
+  <!-- ============================================================
+    MAIN LAYOUT
+    Three-column grid: sidebar | content | inspector panel
+  ============================================================ -->
+  <div class="layout">
 
-    // Show this card if we're showing everything, or if it has the matching tag
-    const isVisible = filter === 'all' || tags.includes(filter);
 
-    // Setting display:none hides the element entirely — like SetActive(false)
-    card.style.display = isVisible ? 'block' : 'none';
+    <!-- ── LEFT SIDEBAR ────────────────────────────────────────
+      Filter buttons and external links.
+      The onclick calls filterGames() defined in js/games.js
+    ──────────────────────────────────────────────────────────── -->
+    <div class="sidebar">
 
-    if (isVisible) visibleCount++;
-  });
+      <div class="sidebar-section">
+        <div class="sidebar-label">SCENE EXPLORER</div>
+        <button class="sidebar-item active" onclick="filterGames('all', this)">
+          <span class="icon">▣</span> All Projects
+        </button>
+        <button class="sidebar-item" onclick="filterGames('jam', this)">
+          <span class="icon">⊞</span> Game Jams
+        </button>
+        <button class="sidebar-item" onclick="filterGames('commercial', this)">
+          <span class="icon">◈</span> Commercial
+        </button>
+        <button class="sidebar-item" onclick="filterGames('proto', this)">
+          <span class="icon">◇</span> Prototypes
+        </button>
+      </div>
 
-  appendLog(`[INF] ${visibleCount} project(s) matched "${filter}"`, 'info');
-}
+      <div class="sidebar-section">
+        <div class="sidebar-label">FILTER BY TAG</div>
+        <button class="sidebar-item" onclick="filterGames('Unity', this)"><span class="icon">◉</span> Unity</button>
+        <button class="sidebar-item" onclick="filterGames('Godot', this)"><span class="icon">◉</span> Godot</button>
+        <button class="sidebar-item" onclick="filterGames('C#', this)"><span class="icon">◉</span> C#</button>
+        <button class="sidebar-item" onclick="filterGames('2D', this)"><span class="icon">◉</span> 2D</button>
+        <button class="sidebar-item" onclick="filterGames('3D', this)"><span class="icon">◉</span> 3D</button>
+      </div>
 
-// Expose on window so inline onclick="" attributes can reach it
-window.filterGames = filterGames;
+      <div class="sidebar-section">
+        <div class="sidebar-label">LINKS</div>
+        <!-- Replace # with your real URLs -->
+        <a class="sidebar-item" href="https://github.com/YOURUSERNAME" target="_blank"><span class="icon">⇗</span> GitHub</a>
+        <a class="sidebar-item" href="https://YOURUSERNAME.itch.io"    target="_blank"><span class="icon">⇗</span> itch.io</a>
+        <a class="sidebar-item" href="https://linkedin.com/in/YOURUSERNAME" target="_blank"><span class="icon">⇗</span> LinkedIn</a>
+      </div>
+    </div>
+
+
+    <!-- ── CENTRE CONTENT ───────────────────────────────────────
+      Three views. Only one is visible at a time.
+      switchTab() in js/tabs.js handles showing/hiding them.
+    ──────────────────────────────────────────────────────────── -->
+    <div class="main">
+
+
+      <!-- PORTFOLIO VIEW -->
+      <div class="view active" id="view-portfolio">
+
+        <div class="hero">
+          <!-- Edit all of these -->
+          <div class="hero-eyebrow">// GAME DEVELOPER — C# — NEW ZEALAND</div>
+          <div class="hero-name">YOUR <span>NAME</span></div>
+          <div class="hero-title">INDIE DEVELOPER & DESIGNER</div>
+          <div class="hero-bio">
+            I build games with a focus on tight mechanics, expressive visuals, and
+            moments that stay with players long after they stop playing.
+          </div>
+        </div>
+
+        <!-- Edit the numbers -->
+        <div class="stat-grid">
+          <div class="stat"><div class="stat-val">12</div><div class="stat-label">PROJECTS</div></div>
+          <div class="stat"><div class="stat-val">5</div><div class="stat-label">GAME JAMS</div></div>
+          <div class="stat"><div class="stat-val">3</div><div class="stat-label">YEARS EXP</div></div>
+          <div class="stat"><div class="stat-val">2</div><div class="stat-label">SHIPPED</div></div>
+        </div>
+
+        <div class="section-title">GAMES</div>
+
+        <!-- ── GAME CARDS ──────────────────────────────────────
+          Each .game-card is one project.
+          data-tags: comma-separated — used by filterGames() to show/hide cards.
+          To add a game: copy one card block, paste it, edit the content.
+          To add a screenshot: replace the .thumb-placeholder div with:
+            <img src="images/mygame.png" alt="My Game"
+                 style="width:100%;height:100%;object-fit:cover;">
+        ──────────────────────────────────────────────────────── -->
+        <div class="games-grid" id="games-grid">
+
+          <div class="game-card" data-tags="all,commercial,Unity,C#,2D">
+            <div class="game-thumb">
+              <div class="thumb-placeholder">
+                <div class="thumb-icon">🎮</div>
+                <div class="thumb-label">SCREENSHOT</div>
+              </div>
+              <div class="game-engine-badge">UNITY</div>
+            </div>
+            <div class="game-title">Project Null</div>
+            <div class="game-genre">ROGUELIKE / 2D</div>
+            <div class="game-desc">A fast-paced dungeon crawler where every run rewrites the rules. Built solo over 8 months.</div>
+            <div class="game-tags">
+              <span class="game-tag">C#</span>
+              <span class="game-tag">PROCEDURAL</span>
+              <span class="game-tag">PIXEL ART</span>
+            </div>
+          </div>
+
+          <div class="game-card" data-tags="all,jam,Godot,3D">
+            <div class="game-thumb">
+              <div class="thumb-placeholder">
+                <div class="thumb-icon">🌌</div>
+                <div class="thumb-label">SCREENSHOT</div>
+              </div>
+              <div class="game-engine-badge">GODOT</div>
+            </div>
+            <div class="game-title">Voidwalker</div>
+            <div class="game-genre">PLATFORMER / JAM</div>
+            <div class="game-desc">48-hour jam entry. Explore a dying space station using gravity manipulation.</div>
+            <div class="game-tags">
+              <span class="game-tag">GDScript</span>
+              <span class="game-tag">JAM</span>
+              <span class="game-tag">3D</span>
+            </div>
+          </div>
+
+          <div class="game-card" data-tags="all,proto,Unity,C#">
+            <div class="game-thumb">
+              <div class="thumb-placeholder">
+                <div class="thumb-icon">⚔️</div>
+                <div class="thumb-label">SCREENSHOT</div>
+              </div>
+              <div class="game-engine-badge">UNITY</div>
+            </div>
+            <div class="game-title">Ashbound</div>
+            <div class="game-genre">RPG / WIP</div>
+            <div class="game-desc">A narrative RPG set in a post-collapse world. Systems-heavy with branching dialogue.</div>
+            <div class="game-tags">
+              <span class="game-tag">C#</span>
+              <span class="game-tag">NARRATIVE</span>
+              <span class="game-tag">IN PROGRESS</span>
+            </div>
+          </div>
+
+        </div><!-- /games-grid -->
+      </div><!-- /view-portfolio -->
+
+
+      <!-- ABOUT VIEW -->
+      <div class="view" id="view-about">
+
+        <div class="hero-eyebrow" style="margin-bottom:12px">// ABOUT.md</div>
+        <div class="hero-name" style="font-size:48px;margin-bottom:16px">WHO <span>AM I</span></div>
+
+        <!-- Edit this bio -->
+        <div class="hero-bio" style="margin-bottom:32px;max-width:600px">
+          Hi — I'm a game developer from New Zealand with a background in C# and a love
+          for systems design, procedural generation, and strange fiction. I've been building
+          games independently for several years, mostly in Unity and Godot.
+          <br><br>
+          I got into game dev through programming, so I tend to approach design from a
+          systems-first perspective — but I care deeply about the player experience and
+          the feeling of play.
+        </div>
+
+        <div class="section-title">TECH STACK</div>
+        <!-- Add class="primary" to your strongest skills -->
+        <div class="tag-row" style="margin-bottom:32px">
+          <span class="tag primary">C#</span>
+          <span class="tag primary">Unity</span>
+          <span class="tag primary">Godot</span>
+          <span class="tag">GDScript</span>
+          <span class="tag">ShaderLab</span>
+          <span class="tag">GLSL</span>
+          <span class="tag">Git</span>
+          <span class="tag">Blender</span>
+          <span class="tag">Aseprite</span>
+          <span class="tag">Photoshop</span>
+        </div>
+
+        <div class="section-title">AREAS OF INTEREST</div>
+        <div class="tag-row">
+          <span class="tag">Procedural Generation</span>
+          <span class="tag">Game Feel</span>
+          <span class="tag">Systems Design</span>
+          <span class="tag">Narrative Design</span>
+          <span class="tag">AI / Pathfinding</span>
+          <span class="tag">Shader Programming</span>
+          <span class="tag">Game Jams</span>
+        </div>
+
+      </div><!-- /view-about -->
+
+
+      <!-- CONTACT VIEW -->
+      <div class="view" id="view-contact">
+
+        <div class="hero-eyebrow" style="margin-bottom:12px">// CONTACT.md</div>
+        <div class="hero-name" style="font-size:48px;margin-bottom:16px">GET IN <span>TOUCH</span></div>
+
+        <div class="hero-bio" style="margin-bottom:32px">
+          Open to collaborations, freelance work, and interesting conversations about games.
+          Response time: usually within a day or two.
+        </div>
+
+        <div class="section-title">CHANNELS</div>
+
+        <!-- Replace href values and display text with your real details -->
+        <div class="contact-grid" style="margin-bottom:32px">
+          <a class="contact-item" href="mailto:you@email.com">
+            <span class="contact-icon">✉</span>
+            <div>
+              <div class="contact-label">EMAIL</div>
+              <div class="contact-val">you@email.com</div>
+            </div>
+          </a>
+          <a class="contact-item" href="https://YOURUSERNAME.itch.io" target="_blank">
+            <span class="contact-icon">◈</span>
+            <div>
+              <div class="contact-label">ITCH.IO</div>
+              <div class="contact-val">yourname.itch.io</div>
+            </div>
+          </a>
+          <a class="contact-item" href="https://github.com/YOURUSERNAME" target="_blank">
+            <span class="contact-icon">◇</span>
+            <div>
+              <div class="contact-label">GITHUB</div>
+              <div class="contact-val">github.com/yourname</div>
+            </div>
+          </a>
+          <a class="contact-item" href="https://linkedin.com/in/YOURUSERNAME" target="_blank">
+            <span class="contact-icon">◉</span>
+            <div>
+              <div class="contact-label">LINKEDIN</div>
+              <div class="contact-val">/in/yourname</div>
+            </div>
+          </a>
+        </div>
+
+        <div class="section-title">SEND A MESSAGE</div>
+
+        <!-- Note: sign up at formspree.io (free) to make this actually send emails.
+             When ready, change this div to a <form> and add:
+               action="https://formspree.io/f/YOUR_ID" method="POST" -->
+        <div style="max-width:500px">
+          <div class="form-field">
+            <label class="form-label">YOUR NAME</label>
+            <input class="form-input" type="text" placeholder="Jane Smith">
+          </div>
+          <div class="form-field">
+            <label class="form-label">EMAIL</label>
+            <input class="form-input" type="email" placeholder="jane@example.com">
+          </div>
+          <div class="form-field">
+            <label class="form-label">MESSAGE</label>
+            <textarea class="form-input" placeholder="Hey, I want to make a game together..."></textarea>
+          </div>
+          <button class="btn-send">SEND_MESSAGE →</button>
+        </div>
+
+      </div><!-- /view-contact -->
+
+
+    </div><!-- /main -->
+
+
+    <!-- ── RIGHT INSPECTOR PANEL ────────────────────────────────
+      Shows properties, skill bars, and a live console log.
+      The console is updated by js/console.js whenever the user
+      interacts with the page.
+    ──────────────────────────────────────────────────────────── -->
+    <div class="right-panel">
+
+      <!-- Edit these property values -->
+      <div class="panel-section">
+        <div class="panel-title">INSPECTOR</div>
+        <div class="prop-row"><span class="prop-key">status</span><span class="prop-val ok">● ACTIVE</span></div>
+        <div class="prop-row"><span class="prop-key">location</span><span class="prop-val">New Zealand</span></div>
+        <div class="prop-row"><span class="prop-key">available</span><span class="prop-val accent">TRUE</span></div>
+        <div class="prop-row"><span class="prop-key">primary_engine</span><span class="prop-val">Unity</span></div>
+        <div class="prop-row"><span class="prop-key">language</span><span class="prop-val">C#</span></div>
+      </div>
+
+      <!-- Edit skill names and width percentages (0–100) -->
+      <div class="panel-section">
+        <div class="panel-title">SKILLS</div>
+        <div class="skill-bar-row">
+          <div class="skill-bar-header"><span class="skill-name">C#</span><span class="skill-pct">95%</span></div>
+          <div class="skill-track"><div class="skill-fill" style="width:95%"></div></div>
+        </div>
+        <div class="skill-bar-row">
+          <div class="skill-bar-header"><span class="skill-name">Unity</span><span class="skill-pct">85%</span></div>
+          <div class="skill-track"><div class="skill-fill" style="width:85%"></div></div>
+        </div>
+        <div class="skill-bar-row">
+          <div class="skill-bar-header"><span class="skill-name">Godot</span><span class="skill-pct">70%</span></div>
+          <div class="skill-track"><div class="skill-fill teal" style="width:70%"></div></div>
+        </div>
+        <div class="skill-bar-row">
+          <div class="skill-bar-header"><span class="skill-name">Shaders</span><span class="skill-pct">60%</span></div>
+          <div class="skill-track"><div class="skill-fill teal" style="width:60%"></div></div>
+        </div>
+        <div class="skill-bar-row">
+          <div class="skill-bar-header"><span class="skill-name">Blender</span><span class="skill-pct">50%</span></div>
+          <div class="skill-track"><div class="skill-fill" style="width:50%"></div></div>
+        </div>
+      </div>
+
+      <!-- This is populated automatically by js/console.js -->
+      <div class="panel-section">
+        <div class="panel-title">CONSOLE OUTPUT</div>
+        <div id="console-log"></div>
+      </div>
+
+    </div><!-- /right-panel -->
+
+
+  </div><!-- /layout -->
+
+
+  <!-- JavaScript files loaded at the bottom so HTML is ready before scripts run.
+       Think of this like Unity's script execution order — order matters here too. -->
+  <script type="module" src="js/console.js"></script>
+  <script type="module" src="js/tabs.js"></script>
+  <script type="module" src="js/games.js"></script>
+  <script type="module" src="js/main.js"></script>
+
+</body>
+</html>

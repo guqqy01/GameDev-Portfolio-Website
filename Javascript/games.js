@@ -1,56 +1,50 @@
 /*
-  console.js — Right Panel Console Log
+  games.js — Game Card Filtering
   ═══════════════════════════════════════════════════════════════
 
-  Manages the fake console output in the right inspector panel.
-
-  This module exports one function — appendLog() — which other
-  scripts import and call to write a new line to the console.
-
-  "export" is how you make a function available to other files.
-  It's similar to "public" in C#.
+  Handles the sidebar filter buttons on the portfolio page.
+  When you click "Game Jams", this script shows only cards
+  with "jam" in their data-tags attribute and hides the rest.
 
   ═══════════════════════════════════════════════════════════════
 */
 
-// Record when the page first loaded so we can show elapsed time.
-// Date.now() returns milliseconds since 1970 — same idea as
-// Time.realtimeSinceStartup in Unity.
-const startTime = Date.now();
+import { appendLog } from './console.js';
 
 /**
- * Appends a new line to the console panel.
+ * Filters the game cards by category or tag.
+ * Called from the onclick attributes on sidebar buttons.
  *
- * @param {string} message  - The text to display, e.g. "[NAV] Portfolio opened"
- * @param {string} type     - Optional style: "ok" (green) or "info" (teal)
+ * @param {string}      filter  - The tag to filter by, e.g. 'jam', 'Unity', 'all'
+ * @param {HTMLElement} btn     - The button that was clicked (passed as 'this' in HTML)
  */
-export function appendLog(message, type = '') {
+export function filterGames(filter, btn) {
 
-  // Find the console container element in the HTML
-  const log = document.getElementById('console-log');
+  // Deactivate all sidebar items, then activate just the clicked one
+  document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+  btn.classList.add('active');
 
-  // Calculate elapsed seconds since page load, formatted as "00:00:04"
-  const elapsed = ((Date.now() - startTime) / 1000).toFixed(2).padStart(7, '0');
+  // Get every game card and decide whether to show or hide it
+  const cards = document.querySelectorAll('.game-card');
+  let visibleCount = 0;
 
-  // Create a new line element
-  const line = document.createElement('div');
-  line.className = 'log-line';
+  cards.forEach(card => {
 
-  // Set its content — template literals (backticks) work like C#'s $"" strings
-  line.innerHTML = `
-    <span class="log-time">${elapsed}</span>
-    <span class="log-msg ${type}">${message}</span>
-  `;
+    // data-tags in HTML becomes dataset.tags in JavaScript.
+    // e.g. data-tags="all,jam,Unity" → ['all', 'jam', 'Unity']
+    const tags = card.dataset.tags ? card.dataset.tags.split(',') : [];
 
-  // Add it to the console and scroll to the bottom
-  log.appendChild(line);
-  log.scrollTop = log.scrollHeight;
+    // Show this card if we're showing everything, or if it has the matching tag
+    const isVisible = filter === 'all' || tags.includes(filter);
+
+    // Setting display:none hides the element entirely — like SetActive(false)
+    card.style.display = isVisible ? 'block' : 'none';
+
+    if (isVisible) visibleCount++;
+  });
+
+  appendLog(`[INF] ${visibleCount} project(s) matched "${filter}"`, 'info');
 }
 
-// Write the startup messages when the page first loads.
-// These run immediately when this script is imported.
-appendLog('[OK] Site loaded', 'ok');
-appendLog('[INF] 3 games found', 'info');
-appendLog('[SYS] Rendering scenes');
-appendLog('[OK] All assets ready', 'ok');
-appendLog('[INF] Visitor detected', 'info');
+// Expose on window so inline onclick="" attributes can reach it
+window.filterGames = filterGames;

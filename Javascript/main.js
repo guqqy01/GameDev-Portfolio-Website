@@ -1,45 +1,44 @@
 /*
-  tabs.js — Tab Navigation
+  main.js — Entry Point
   ═══════════════════════════════════════════════════════════════
 
-  Handles switching between the three main views:
-  Portfolio, About, and Contact.
+  This is the first script that runs when the page loads.
+  Think of it like a Start() method in Unity — it's where you
+  put initialisation logic that needs to run once at startup.
 
-  "import" pulls in functions from other files — like a "using"
-  statement in C#, except it references the file directly.
+  All the other JS files (tabs.js, games.js, console.js) export
+  their own functions. This file is where you'd wire things
+  together or add any setup that spans multiple systems.
+
+  Currently it's minimal — the modules handle themselves — but
+  this is where you'd add things like:
+    - Fetching game data from an external API
+    - Animating elements on page load
+    - Registering global keyboard shortcuts
 
   ═══════════════════════════════════════════════════════════════
 */
 
-import { appendLog } from './console.js';
+// The imports below don't use the imported values directly here —
+// they just ensure those modules are loaded and their startup
+// code (like the initial console messages) runs.
+import './console.js';
+import './tabs.js';
+import './games.js';
 
-/**
- * Shows the selected view and hides the others.
- * Called from the onclick attributes in index.html.
- *
- * @param {string} name - One of: 'portfolio', 'about', 'contact'
- */
-export function switchTab(name) {
+// ── EXAMPLE: keyboard shortcut to switch tabs ─────────────────
+// This listens for keypress events on the whole document.
+// document.addEventListener works like Unity's Input.GetKeyDown —
+// it fires a callback function whenever an event occurs.
+document.addEventListener('keydown', (event) => {
 
-  // Remove 'active' from all tabs and views.
-  // querySelectorAll returns a list of elements matching a CSS selector —
-  // like FindObjectsOfType<T>() but for HTML elements.
-  document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-  document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+  // event.key is the key that was pressed
+  // event.altKey checks if Alt was held at the same time
+  if (!event.altKey) return;   // only act when Alt is held
 
-  // Map tab names to their position in the tab list (0, 1, 2)
-  const tabIndex = { portfolio: 0, about: 1, contact: 2 };
+  if (event.key === '1') window.switchTab('portfolio');
+  if (event.key === '2') window.switchTab('about');
+  if (event.key === '3') window.switchTab('contact');
+});
 
-  // Add 'active' to the clicked tab and its matching view
-  document.querySelectorAll('.tab')[tabIndex[name]].classList.add('active');
-  document.getElementById('view-' + name).classList.add('active');
-
-  // Write to the console panel
-  appendLog(`[NAV] Switched to ${name}`, 'info');
-}
-
-// Expose switchTab on the window object so the inline onclick=""
-// attributes in index.html can reach it.
-// (Normally module functions are scoped to the module — this is
-// the bridge between modules and inline HTML event handlers.)
-window.switchTab = switchTab;
+// ── ADD MORE INITIALISATION BELOW THIS LINE ───────────────────
